@@ -1,211 +1,259 @@
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Scanner;
 
 public class Main {
-    private static List<SocioTorcedor> torcedores = new ArrayList<>();
-    public static void main(String[] args) {
-        Scanner entrada = new Scanner(System.in);
 
-        System.out.println("===BEM VINDO AO SITE DO AFC RICHMOND===");
+    public static void main(String[] args) {
+
+        Scanner entrada = new Scanner(System.in);
+        Clube clube = new Clube();
+
         int opcao;
 
-        do {
+        System.out.println("================================");
+        System.out.println(" BEM-VINDO AO " + clube.getNome());
+        System.out.println("================================");
 
-            System.out.println("1. Cadastrar");
-            System.out.println("2. Atualizar dados");
-            System.out.println("3. Cancelar");
-            System.out.println("4. Reativar");
-            System.out.println("5. Sair");
-            opcao = entrada.nextInt();
+        try {
 
-            switch (opcao) {
-                case 1:
-                    cadastrarUsuario(entrada);
-                    break;
-                case 2:
-                    atualizarUsuario(entrada);
-                    break;
-                case 3:
-                    cancelarUsuario(entrada);
-                    break;
-                case 4:
-                    reativarUsuario(entrada);
-                    break;
-                case 5:
-                    System.out.println("Saindo...");
-                    break;
-                default:
-                    System.out.println("Digite uma opcao correta!");
-                    break;
-            }
-        } while (opcao <= 1 || opcao > 5);
+            do {
+                System.out.println("\n===== MENU PRINCIPAL =====");
+                System.out.println("1. Cadastrar sócio");
+                System.out.println("2. Listar sócios");
+                System.out.println("3. Atualizar dados");
+                System.out.println("4. Cancelar sócio");
+                System.out.println("5. Reativar sócio");
+                System.out.println("6. Buscar sócio");
+                System.out.println("7. Quantidade de sócios");
+                System.out.println("0. Sair");
+
+                opcao = lerInteiro(entrada, "Escolha uma opção: ");
+
+                switch (opcao) {
+
+                    case 1:
+                        cadastrarUsuario(entrada, clube);
+                        break;
+
+                    case 2:
+                        clube.listarTorcedores();
+                        break;
+
+                    case 3:
+                        atualizarUsuario(entrada, clube);
+                        break;
+
+                    case 4:
+                        alterarStatus(entrada, clube, false);
+                        break;
+
+                    case 5:
+                        alterarStatus(entrada, clube, true);
+                        break;
+
+                    case 6:
+                        buscarUsuario(entrada, clube);
+                        break;
+
+                    case 7:
+                        System.out.println("Total de sócios: "
+                                + clube.quantidadeTorcedores());
+                        break;
+
+                    case 0:
+                        System.out.println("Saindo do sistema...");
+                        break;
+
+                    default:
+                        System.out.println("Opção inválida!");
+                }
+
+            } while (opcao != 0);
+
+        } finally {
+            entrada.close();
+            System.out.println("Sistema encerrado.");
+        }
     }
 
+    private static int lerInteiro(Scanner entrada, String mensagem) {
 
+        while (true) {
+            try {
+                System.out.print(mensagem);
+                return Integer.parseInt(entrada.nextLine());
 
-    private static void cadastrarUsuario(Scanner  entrada) {
+            } catch (NumberFormatException e) {
+                System.out.println("Digite apenas números!");
+            }
+        }
+    }
+
+    private static void cadastrarUsuario(Scanner entrada, Clube clube) {
+
         SocioTorcedor torcedor = new SocioTorcedor();
-        int p;
 
-        do{
-            System.out.println("Escolha seu plano de Socio Torcedor");
-            System.out.println("1 - Prata - $20 mensal");
-            System.out.println("2 - Ouro - $40 mensal");
-            System.out.println("3 - Diamante - $60 mensal");
-            p = entrada.nextInt();
-            if(p == 1){
-                torcedor.setPlano("Prata");
+        System.out.println("\n===== CADASTRO DE SÓCIO =====");
+
+        System.out.println("1 - Prata - $20 mensal");
+        System.out.println("2 - Ouro - $40 mensal");
+        System.out.println("3 - Diamante - $60 mensal");
+
+        int plano = lerInteiro(entrada, "Escolha seu plano: ");
+
+        while (plano < 1 || plano > 3) {
+            System.out.println("Plano inválido!");
+            plano = lerInteiro(entrada, "Escolha novamente: ");
+        }
+
+        if (plano == 1) {
+            torcedor.setPlano("Prata");
+        } else if (plano == 2) {
+            torcedor.setPlano("Ouro");
+        } else {
+            torcedor.setPlano("Diamante");
+        }
+
+        System.out.print("Digite seu nome: ");
+        torcedor.setNome(entrada.nextLine());
+
+        boolean cpfValido = false;
+
+        while (!cpfValido) {
+            System.out.print("Digite seu CPF: ");
+            cpfValido = torcedor.setCpf(entrada.nextLine());
+
+            if (!cpfValido) {
+                System.out.println("CPF inválido! Tente novamente.");
             }
-            else if(p == 2){
-                torcedor.setPlano("Ouro");
+        }
+
+        if (clube.buscarPorCpf(torcedor.getCpf()) != null) {
+            System.out.println("Este CPF já está cadastrado.");
+            return;
+        }
+
+        System.out.print("Digite seu email: ");
+        torcedor.setEmail(entrada.nextLine());
+
+        System.out.print("Digite seu telefone (11 números): ");
+        torcedor.setTelefone(entrada.nextLine());
+
+        boolean dataValida = false;
+
+        while (!dataValida) {
+            try {
+                System.out.print("Data de nascimento (AAAA-MM-DD): ");
+
+                LocalDate data = LocalDate.parse(entrada.nextLine());
+
+                torcedor.setDataNascimento(data);
+
+                if (torcedor.getDataNascimento() != null) {
+                    dataValida = true;
+                }
+
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato de data inválido!");
             }
-            else if(p == 3){
-                torcedor.setPlano("Diamante");
-            }
-            else{
-                System.out.println("Digite o numero correto do plano");
-            }
-        }while(p < 1 || p > 3 );
-        System.out.println("Digite seu nome: ");
-        torcedor.setNome(entrada.next());
+        }
 
-        System.out.println("Digite seu CPF: ");
-        torcedor.setCpf(entrada.next());
+        int numeroSocio = clube.quantidadeTorcedores() + 1;
+        torcedor.setNumeroSocio(numeroSocio);
 
-        System.out.println("Digite seu email: ");
-        torcedor.setEmail(entrada.next());
+        clube.adicionarSocio(torcedor);
 
-        System.out.println("Digite seu telefone: ");
-        torcedor.setTelefone(entrada.next());
-
-        System.out.println("Digite sua data de nascimento: ");
-        torcedor.setDataNascimento(entrada.next());
-
-        LocalDate dataCadastro = LocalDate.now();
-        int numeroSocio = (int) (Math.random() * 100) + 1;
-
-        System.out.println("Numero de socio: " + numeroSocio);
-        System.out.println("Status: Cadastrado.");
-        System.out.println("Data de cadastro: " + dataCadastro);
-        torcedores.add(torcedor);
+        System.out.println("\nCadastro realizado com sucesso!");
         System.out.println(torcedor);
     }
 
-    private static void atualizarUsuario(Scanner entrada) {
+    private static void buscarUsuario(Scanner entrada, Clube clube) {
 
-        if (torcedores.isEmpty()) {
-            System.out.println("Nenhum torcedor cadastrado");
-            return;
-        }
+        System.out.print("Digite o CPF do sócio: ");
+        String cpf = entrada.nextLine().replaceAll("[^0-9]", "");
 
-        System.out.println("Digite o CPF do torcedor que deseja atualizar: ");
-        String cpf = entrada.next();
-
-        SocioTorcedor torcedor = torcedores.stream()
-                .filter(t -> t.getCpf().equals(cpf))
-                .findFirst()
-                .orElse(null);
+        SocioTorcedor torcedor = clube.buscarPorCpf(cpf);
 
         if (torcedor == null) {
-            System.out.println("Torcedor não encontrado.");
+            System.out.println("Sócio não encontrado.");
+        } else {
+            System.out.println(torcedor);
+        }
+    }
+
+    private static void atualizarUsuario(Scanner entrada, Clube clube) {
+
+        System.out.print("Digite o CPF do sócio: ");
+        String cpf = entrada.nextLine().replaceAll("[^0-9]", "");
+
+        SocioTorcedor torcedor = clube.buscarPorCpf(cpf);
+
+        if (torcedor == null) {
+            System.out.println("Sócio não encontrado.");
             return;
         }
-        System.out.println("Qual item vc deseja alterar?");
-        System.out.println("1. Nome");
-        System.out.println("2. CPF");
-        System.out.println("3. Email");
-        System.out.println("4. Telefone");
-        System.out.println("5. Data de nascimento");
-        System.out.println("6. Sair");
 
-        int opcao = entrada.nextInt();
+        System.out.println("\n1. Nome");
+        System.out.println("2. Email");
+        System.out.println("3. Telefone");
+        System.out.println("4. Data de nascimento");
+
+        int opcao = lerInteiro(entrada, "O que deseja alterar? ");
 
         switch (opcao) {
+
             case 1:
-                System.out.println("Digite o novo nome: ");
-                torcedor.setNome(entrada.next());
+                System.out.print("Novo nome: ");
+                torcedor.setNome(entrada.nextLine());
                 break;
+
             case 2:
-                System.out.println("Digite o novo CPF: ");
-                torcedor.setCpf(entrada.next());
+                System.out.print("Novo email: ");
+                torcedor.setEmail(entrada.nextLine());
                 break;
+
             case 3:
-                System.out.println("Digite o novo email: ");
-                torcedor.setEmail(entrada.next());
+                System.out.print("Novo telefone: ");
+                torcedor.setTelefone(entrada.nextLine());
                 break;
+
             case 4:
-                System.out.println("Digite o novo telefone: ");
-                torcedor.setTelefone(entrada.next());
+                try {
+                    System.out.print("Nova data (AAAA-MM-DD): ");
+                    LocalDate data = LocalDate.parse(entrada.nextLine());
+                    torcedor.setDataNascimento(data);
+
+                } catch (DateTimeParseException e) {
+                    System.out.println("Data inválida!");
+                }
                 break;
-            case 5:
-                System.out.println("Digite a nova data de nascimento: ");
-                torcedor.setDataNascimento(entrada.next());
-                break;
-            case 6:
-                System.out.println("Saindo...");
-                break;
+
             default:
-                System.out.println("Digite um numero valido.");
-                break;
+                System.out.println("Opção inválida.");
         }
+
         System.out.println(torcedor);
-
     }
 
-    private static void cancelarUsuario(Scanner entrada) {
-        if (torcedores.isEmpty()) {
-            System.out.println("Nenhum torcedor cadastrado");
-            return;
-        }
+    private static void alterarStatus(
+            Scanner entrada, Clube clube, boolean reativar) {
 
-        System.out.println("Digite o CPF do torcedor que deseja cancelar: ");
-        String cpf = entrada.next();
+        System.out.print("Digite o CPF do sócio: ");
+        String cpf = entrada.nextLine().replaceAll("[^0-9]", "");
 
-        SocioTorcedor torcedor = torcedores.stream()
-                .filter(t -> t.getCpf().equals(cpf))
-                .findFirst()
-                .orElse(null);
-        if (torcedor == null) {
-            System.out.println("Torcedor nao encontrado.");
-            return;
-        }
-
-        if (torcedor.getStatus().equals(StatusTorcedor.CANCELADO)) {
-            System.out.println("Este usuario ja esta cancelado.");
-            return;
-        }
-
-        torcedor.setStatus(StatusTorcedor.CANCELADO);
-        System.out.println("Usuario cancelado com sucesso!");
-    }
-
-    private static void reativarUsuario(Scanner entrada) {
-        if (torcedores.isEmpty()) {
-            System.out.println("Nenhum torcedor cadastrado");
-            return;
-        }
-        System.out.println("Digite o cpf do torcedor que deseja reativar: ");
-        String cpf = entrada.next();
-
-        SocioTorcedor torcedor = torcedores.stream()
-                .filter(t -> t.getCpf().equals(cpf))
-                .findFirst()
-                .orElse(null);
+        SocioTorcedor torcedor = clube.buscarPorCpf(cpf);
 
         if (torcedor == null) {
-            System.out.println("Torcedor nao encontrado.");
+            System.out.println("Sócio não encontrado.");
             return;
         }
 
-        if (torcedor.getStatus() ==  StatusTorcedor.ATIVO) {
-            System.out.println("Torcedor ja esta ativo.");
-            return;
+        if (reativar) {
+            torcedor.reativar();
+        } else {
+            torcedor.cancelar();
         }
-
-        torcedor.setStatus(StatusTorcedor.ATIVO);
-        System.out.println("Usuario reativado com sucesso!");
     }
 }
