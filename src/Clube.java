@@ -1,4 +1,4 @@
-
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Clube {
@@ -11,7 +11,7 @@ public class Clube {
     private String cidade = "Londres";
     private String endereco = "Selhurst Park, London, SE25 6PU, Inglaterra";
 
-    private ArrayList<SocioTorcedor> torcedores = new ArrayList<>();
+    private SocioDAO socioDAO = new SocioDAO();
 
     public String getNome() {
         return nome;
@@ -42,26 +42,41 @@ public class Clube {
     }
 
     public void adicionarSocio(SocioTorcedor torcedor) {
-        torcedores.add(torcedor);
+
+        try {
+            socioDAO.cadastrar(torcedor);
+            System.out.println("Sócio salvo no banco de dados!");
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao cadastrar sócio: " + e.getMessage());
+        }
     }
 
     public ArrayList<SocioTorcedor> getTorcedores() {
-        return torcedores;
+
+        try {
+            return socioDAO.listar();
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao buscar sócios: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     public SocioTorcedor buscarPorCpf(String cpf) {
 
-        for (SocioTorcedor torcedor : torcedores) {
+        try {
+            return socioDAO.buscarPorCpf(cpf);
 
-            if (torcedor.getCpf().equals(cpf)) {
-                return torcedor;
-            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao buscar sócio: " + e.getMessage());
+            return null;
         }
-
-        return null;
     }
 
     public void listarTorcedores() {
+
+        ArrayList<SocioTorcedor> torcedores = getTorcedores();
 
         if (torcedores.isEmpty()) {
             System.out.println("Nenhum sócio cadastrado.");
@@ -74,6 +89,13 @@ public class Clube {
     }
 
     public int quantidadeTorcedores() {
-        return torcedores.size();
+
+        try {
+            return socioDAO.quantidade();
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao contar sócios: " + e.getMessage());
+            return 0;
+        }
     }
 }

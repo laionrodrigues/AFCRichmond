@@ -164,6 +164,14 @@ public class SocioTorcedor {
         return dataCadastro;
     }
 
+    public void setDataCadastro(LocalDate dataCadastro) {
+        this.dataCadastro = dataCadastro;
+    }
+
+    public void setStatus(StatusTorcedor status) {
+        this.status = status;
+    }
+
     public String getPlano() {
         return plano;
     }
