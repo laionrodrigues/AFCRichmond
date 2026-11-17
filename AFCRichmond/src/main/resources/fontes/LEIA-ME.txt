@@ -1,0 +1,6 @@
+Fontes usadas na interface grafica:
+ - Lora (Cyreal) - titulos
+ - Poppins (Indian Type Foundry) - textos
+
+Ambas sao licenciadas sob a SIL Open Font License 1.1 (https://openfontlicense.org),
+que permite o uso e a redistribuicao junto com o programa.
